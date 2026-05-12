@@ -48,15 +48,12 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    from app.routers import auth, otp, users
+    from app.routers import admin, auth, otp, users
 
     app.include_router(otp.router,   prefix="/api/otp")
     app.include_router(auth.router,  prefix="/api/auth")
     app.include_router(users.router, prefix="/api/users")
-
-    # admin router registered in Phase 4:
-    # from app.routers import admin
-    # app.include_router(admin.router, prefix="/api/admin")
+    app.include_router(admin.router, prefix="/api/admin")
 
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -68,6 +65,11 @@ def create_app() -> FastAPI:
         return templates.TemplateResponse(
             request, "user/index.html", {"liff_id": settings.liff_id}
         )
+
+    @app.get("/admin", tags=["pages"], include_in_schema=False)
+    async def admin_page(request: Request):
+        """Serve the admin login / dashboard page."""
+        return templates.TemplateResponse(request, "admin/index.html", {})
 
     @app.get("/health", tags=["infra"])
     async def health_check() -> dict[str, str]:

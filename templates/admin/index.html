@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HC 管理後台</title>
+  <link rel="stylesheet" href="/static/admin/style.css" />
+</head>
+<body>
+  <!-- ── 登入畫面 ─────────────────────────────────── -->
+  <div id="view-login" class="view">
+    <div class="login-card">
+      <h1 class="login-card__title">HC 管理後台</h1>
+      <div class="form-group">
+        <label for="username">帳號</label>
+        <input id="username" type="text" autocomplete="username" placeholder="admin" />
+      </div>
+      <div class="form-group">
+        <label for="password">密碼</label>
+        <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" />
+      </div>
+      <div id="login-error" class="alert alert--error hidden"></div>
+      <button id="btn-login" class="btn btn--primary" data-label="登入">登入</button>
+    </div>
+  </div>
+
+  <!-- ── 後台主畫面 ────────────────────────────────── -->
+  <div id="view-dashboard" class="view hidden">
+    <header class="topbar">
+      <span class="topbar__brand">HC 管理後台</span>
+      <button id="btn-logout" class="btn btn--ghost btn--sm">登出</button>
+    </header>
+
+    <main class="main">
+      <div class="toolbar">
+        <h2 class="toolbar__title">已註冊會員</h2>
+        <span id="total-badge" class="badge"></span>
+      </div>
+
+      <!-- 搜尋列 -->
+      <div class="search-bar">
+        <input id="search-input" type="search" placeholder="搜尋姓名 / 手機 / Email…" />
+      </div>
+
+      <!-- 桌面版表格 -->
+      <div class="table-wrap">
+        <table id="user-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>姓名</th>
+              <th>手機</th>
+              <th>Email</th>
+              <th>LINE User ID</th>
+              <th>註冊日期</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+        <p id="no-data" class="no-data hidden">尚無符合的會員資料</p>
+      </div>
+
+      <!-- 分頁控制 -->
+      <div class="pagination" id="pagination"></div>
+    </main>
+  </div>
+
+  <script src="/static/admin/app.js"></script>
+</body>
+</html>
