@@ -15,7 +15,7 @@ set -euo pipefail
 
 APP_USER="hcmvp"
 APP_DIR="/opt/hc_mvp"
-REPO_URL="https://github.com/your-org/hc-mvp.git"   # ← 填入實際 repo URL
+REPO_URL="https://github.com/happyaicoding/HC_mvp.git"
 BRANCH="main"
 PYTHON_MIN="3.11"
 
