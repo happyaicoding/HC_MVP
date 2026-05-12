@@ -3,9 +3,10 @@
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import get_settings
@@ -47,17 +48,26 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    from app.routers import otp
+    from app.routers import auth, otp, users
 
-    app.include_router(otp.router, prefix="/api/otp")
+    app.include_router(otp.router,   prefix="/api/otp")
+    app.include_router(auth.router,  prefix="/api/auth")
+    app.include_router(users.router, prefix="/api/users")
 
-    # Remaining routers registered in later phases:
-    # from app.routers import auth, users, admin
-    # app.include_router(auth.router,  prefix="/api/auth")
-    # app.include_router(users.router, prefix="/api/users")
+    # admin router registered in Phase 4:
+    # from app.routers import admin
     # app.include_router(admin.router, prefix="/api/admin")
 
     app.mount("/static", StaticFiles(directory="static"), name="static")
+
+    templates = Jinja2Templates(directory="templates")
+
+    @app.get("/", tags=["pages"], include_in_schema=False)
+    async def user_page(request: Request):
+        """Serve the LIFF member registration page with LIFF_ID injected."""
+        return templates.TemplateResponse(
+            request, "user/index.html", {"liff_id": settings.liff_id}
+        )
 
     @app.get("/health", tags=["infra"])
     async def health_check() -> dict[str, str]:

@@ -25,6 +25,9 @@ class TwilioError(Exception):
     failure_reason: str
     status_code: int | None = None
 
+    def __post_init__(self) -> None:
+        super().__init__(self.failure_reason)
+
 
 def _get_client() -> Client:
     """Build a Twilio REST client from settings."""

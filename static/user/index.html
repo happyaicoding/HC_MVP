@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HC 會員加入</title>
+  <link rel="stylesheet" href="/static/user/style.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1 class="header__title">會員加入</h1>
+    </header>
+
+    <!-- Step 1: LINE 授權中 (初始畫面) -->
+    <section id="step-init" class="step">
+      <div class="spinner"></div>
+      <p class="hint">正在驗證 LINE 身份，請稍候…</p>
+    </section>
+
+    <!-- Step 2: 輸入手機號碼 -->
+    <section id="step-phone" class="step hidden">
+      <p class="hint">請輸入您的手機號碼以接收驗證碼</p>
+      <div class="form-group">
+        <label for="phone-input">手機號碼</label>
+        <input
+          id="phone-input"
+          type="tel"
+          inputmode="numeric"
+          placeholder="09xxxxxxxx"
+          maxlength="10"
+          autocomplete="tel"
+        />
+      </div>
+      <div id="phone-error" class="error-msg hidden"></div>
+      <button id="btn-send-otp" class="btn btn--primary">發送驗證碼</button>
+    </section>
+
+    <!-- Step 3: 輸入 OTP -->
+    <section id="step-otp" class="step hidden">
+      <p class="hint">驗證碼已發送至 <strong id="otp-phone-display"></strong></p>
+      <p class="hint hint--small">10 分鐘內有效</p>
+      <div class="form-group">
+        <label for="otp-input">驗證碼</label>
+        <input
+          id="otp-input"
+          type="text"
+          inputmode="numeric"
+          placeholder="6 位數字"
+          maxlength="6"
+          autocomplete="one-time-code"
+        />
+      </div>
+      <div id="otp-error" class="error-msg hidden"></div>
+      <button id="btn-verify-otp" class="btn btn--primary">驗證</button>
+      <button id="btn-resend-otp" class="btn btn--ghost">重新發送</button>
+    </section>
+
+    <!-- Step 4: 填寫基本資料 -->
+    <section id="step-profile" class="step hidden">
+      <p class="hint">請填寫以下資料完成會員註冊</p>
+      <div class="form-group">
+        <label for="name-input">姓名</label>
+        <input id="name-input" type="text" placeholder="王小明" maxlength="100" />
+      </div>
+      <div class="form-group">
+        <label for="email-input">Email</label>
+        <input id="email-input" type="email" placeholder="user@example.com" />
+      </div>
+      <div id="profile-error" class="error-msg hidden"></div>
+      <button id="btn-register" class="btn btn--primary">完成註冊</button>
+    </section>
+
+    <!-- Step 5: 完成 -->
+    <section id="step-done" class="step hidden">
+      <div class="success-icon">✓</div>
+      <h2 class="success-title">註冊成功！</h2>
+      <p class="hint">歡迎加入，您已成為我們的會員。</p>
+    </section>
+
+    <!-- 錯誤畫面 -->
+    <section id="step-error" class="step hidden">
+      <div class="error-icon">✕</div>
+      <p id="global-error-msg" class="hint"></p>
+    </section>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="/static/user/app.js"></script>
+</body>
+</html>
