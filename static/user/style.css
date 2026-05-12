@@ -1,0 +1,178 @@
+/* ── Reset & base ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --color-primary:   #06c755;   /* LINE green */
+  --color-primary-h: #05b04c;
+  --color-danger:    #e53e3e;
+  --color-text:      #2d3748;
+  --color-hint:      #718096;
+  --color-border:    #e2e8f0;
+  --color-bg:        #f7fafc;
+  --radius:          12px;
+  --shadow:          0 2px 12px rgba(0,0,0,.08);
+  --font:            -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                     "Helvetica Neue", Arial, sans-serif;
+}
+
+html, body { height: 100%; }
+
+body {
+  font-family: var(--font);
+  background: var(--color-bg);
+  color: var(--color-text);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+/* ── Layout ────────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 480px;
+  padding: 24px 16px 40px;
+}
+
+/* ── Header ────────────────────────────────────────────── */
+.header { text-align: center; margin-bottom: 32px; }
+.header__title { font-size: 1.5rem; font-weight: 700; color: var(--color-primary); }
+
+/* ── Steps ─────────────────────────────────────────────── */
+.step { animation: fadeIn .25s ease; }
+.step.hidden { display: none; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Hint text ─────────────────────────────────────────── */
+.hint {
+  font-size: .95rem;
+  color: var(--color-hint);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+.hint--small { font-size: .8rem; margin-top: -14px; margin-bottom: 20px; }
+.hint strong { color: var(--color-text); }
+
+/* ── Form ──────────────────────────────────────────────── */
+.form-group { margin-bottom: 16px; }
+
+.form-group label {
+  display: block;
+  font-size: .85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--color-text);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  color: var(--color-text);
+  background: #fff;
+  transition: border-color .15s;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.form-group input:focus { border-color: var(--color-primary); }
+
+/* ── Buttons ───────────────────────────────────────────── */
+.btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, opacity .15s;
+  margin-top: 8px;
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+.btn--primary:hover { background: var(--color-primary-h); }
+.btn--primary:disabled { opacity: .55; cursor: not-allowed; }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-hint);
+  border: 1.5px solid var(--color-border);
+  margin-top: 10px;
+}
+.btn--ghost:hover { background: var(--color-border); }
+
+/* ── Error messages ────────────────────────────────────── */
+.error-msg {
+  font-size: .85rem;
+  color: var(--color-danger);
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  background: #fff5f5;
+  border-radius: 8px;
+  border-left: 3px solid var(--color-danger);
+}
+.error-msg.hidden { display: none; }
+
+/* ── Spinner ───────────────────────────────────────────── */
+.spinner {
+  width: 44px; height: 44px;
+  border: 4px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  margin: 40px auto 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Success ───────────────────────────────────────────── */
+.success-icon {
+  width: 72px; height: 72px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 32px auto 20px;
+}
+.success-title {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+/* ── Error screen ──────────────────────────────────────── */
+.error-icon {
+  width: 72px; height: 72px;
+  background: var(--color-danger);
+  color: #fff;
+  font-size: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 32px auto 20px;
+}
+
+/* ── Responsive ────────────────────────────────────────── */
+@media (min-width: 480px) {
+  .container {
+    margin-top: 40px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 36px 32px 48px;
+  }
+}

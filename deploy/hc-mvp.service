@@ -1,0 +1,58 @@
+# ============================================================
+# HC MVP — systemd service unit
+# 安裝路徑：/etc/systemd/system/hc-mvp.service
+#
+# 安裝後執行：
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable hc-mvp
+#   sudo systemctl start  hc-mvp
+# ============================================================
+
+[Unit]
+Description=HC MVP FastAPI Application
+Documentation=https://ai.rh888.tw
+After=network.target
+
+[Service]
+# ── 執行身份（非 root）──────────────────────────────────────
+User=hcmvp
+Group=hcmvp
+WorkingDirectory=/opt/hc_mvp
+
+# ── 環境變數 ────────────────────────────────────────────────
+EnvironmentFile=/opt/hc_mvp/.env
+
+# ── 啟動指令 ────────────────────────────────────────────────
+# workers=2：單核 VM 建議 2 workers（2 × CPU cores + 1）
+# --forwarded-allow-ips：信任 Nginx 的 X-Forwarded-For
+ExecStart=/opt/hc_mvp/.venv/bin/uvicorn app.main:app \
+    --host 127.0.0.1 \
+    --port 8000 \
+    --workers 2 \
+    --forwarded-allow-ips=127.0.0.1 \
+    --log-level info \
+    --access-log
+
+# ── Graceful reload（zero-downtime）────────────────────────
+ExecReload=/bin/kill -HUP $MAINPID
+
+# ── 重啟策略 ─────────────────────────────────────────────────
+Restart=on-failure
+RestartSec=5s
+StartLimitIntervalSec=60s
+StartLimitBurst=3
+
+# ── 安全性強化 ───────────────────────────────────────────────
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/hc_mvp          # DB 檔案與 log 寫入路徑
+PrivateTmp=true
+
+# ── Logging（journald）─────────────────────────────────────
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hc-mvp
+
+[Install]
+WantedBy=multi-user.target
