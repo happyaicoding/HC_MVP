@@ -7,6 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 # Point to an in-memory SQLite DB before importing app modules
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
@@ -20,12 +21,16 @@ os.environ.setdefault("TWILIO_FROM_NUMBER", "+886000000000")
 os.environ.setdefault("ADMIN_USERNAME", "admin")
 os.environ.setdefault("ADMIN_PASSWORD", "test-password")
 
+import app.models  # noqa: F401 — ensure all ORM models register on Base.metadata
 from app.database import Base, get_db  # noqa: E402
 from app.main import app  # noqa: E402
 
+# StaticPool forces SQLAlchemy to reuse one connection so that all sessions
+# share the same in-memory SQLite database state.
 _TEST_ENGINE = create_engine(
     "sqlite:///:memory:",
     connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
 )
 _TestingSessionLocal = sessionmaker(
     bind=_TEST_ENGINE, autocommit=False, autoflush=False

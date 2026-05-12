@@ -47,10 +47,13 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # Routers will be registered here in later phases
-    # from app.routers import auth, otp, users, admin
-    # app.include_router(auth.router, prefix="/api/auth")
-    # app.include_router(otp.router,  prefix="/api/otp")
+    from app.routers import otp
+
+    app.include_router(otp.router, prefix="/api/otp")
+
+    # Remaining routers registered in later phases:
+    # from app.routers import auth, users, admin
+    # app.include_router(auth.router,  prefix="/api/auth")
     # app.include_router(users.router, prefix="/api/users")
     # app.include_router(admin.router, prefix="/api/admin")
 
