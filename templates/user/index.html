@@ -86,7 +86,7 @@
   </div>
 
   <!-- LIFF ID injected by server -->
-  <script>window.__LIFF_ID__ = "{{ liff_id }}";</script>
+  <script>window.__LIFF_ID__ = {{ liff_id | tojson }};</script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="/static/user/app.js"></script>
 </body>

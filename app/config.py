@@ -27,6 +27,15 @@ class Settings(BaseSettings):
     line_channel_secret: str
     liff_id: str
 
+    @field_validator("liff_id")
+    @classmethod
+    def _strip_liff_id(cls, v: str) -> str:
+        """Strip accidental whitespace that may be introduced by copy-paste."""
+        stripped = v.strip()
+        if not stripped:
+            raise ValueError("LIFF_ID must not be empty")
+        return stripped
+
     # ── Twilio ────────────────────────────────────────────
     twilio_account_sid: str
     twilio_auth_token: str
