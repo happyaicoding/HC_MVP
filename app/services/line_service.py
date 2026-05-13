@@ -4,11 +4,14 @@ Calls the LINE OAuth2 token verify endpoint to confirm the token is valid
 and belongs to this channel, then returns the user's LINE user ID.
 """
 
+import logging
 from dataclasses import dataclass
 
 import httpx
 
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 _LINE_VERIFY_URL = "https://api.line.me/oauth2/v2.1/verify"
 
@@ -64,6 +67,11 @@ def verify_liff_token(access_token: str) -> str:
         ) from exc
 
     if resp.status_code != 200:
+        logger.warning(
+            "LINE verify API rejected token: status=%s body=%s",
+            resp.status_code,
+            resp.text[:200],
+        )
         raise LineAuthError(failure_reason="invalid_liff_token")
 
     data = resp.json()
@@ -72,6 +80,11 @@ def verify_liff_token(access_token: str) -> str:
     # LIFF ID format: "<channel_id>-<liff_suffix>"
     channel_id = settings.liff_id.split("-")[0]
     if str(data.get("client_id")) != channel_id:
+        logger.warning(
+            "Channel mismatch: expected=%s got=%s",
+            channel_id,
+            data.get("client_id"),
+        )
         raise LineAuthError(failure_reason="token_channel_mismatch")
 
     user_id: str | None = data.get("sub")
