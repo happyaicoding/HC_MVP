@@ -85,17 +85,26 @@ function render() {
   const slice  = filtered.slice(start, start + pageSize);
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
 
+  // Null-guard: log which element is missing and bail gracefully
+  const elBadge  = $("total-badge");
+  const elTbody  = $("table-body");
+  const elNoData = $("no-data");
+  const elPg     = $("pagination");
+  if (!elBadge || !elTbody || !elNoData || !elPg) {
+    console.error("[render] missing DOM element(s):", { elBadge, elTbody, elNoData, elPg });
+    return;
+  }
+
   // Badge
-  $("total-badge").textContent = `共 ${state.allUsers.length} 人`;
+  elBadge.textContent = `共 ${state.allUsers.length} 人`;
 
   // Table rows
-  const tbody = $("table-body");
   if (slice.length === 0) {
-    tbody.innerHTML = "";
-    $("no-data").classList.remove("hidden");
+    elTbody.innerHTML = "";
+    elNoData.classList.remove("hidden");
   } else {
-    $("no-data").classList.add("hidden");
-    tbody.innerHTML = slice
+    elNoData.classList.add("hidden");
+    elTbody.innerHTML = slice
       .map(
         (u, i) => `<tr>
           <td>${start + i + 1}</td>
@@ -110,9 +119,9 @@ function render() {
   }
 
   // Pagination
-  const pg = $("pagination");
-  if (totalPages <= 1) { pg.innerHTML = ""; return; }
+  if (totalPages <= 1) { elPg.innerHTML = ""; return; }
 
+  elPg.innerHTML = "";
   const buttons = [];
   // Prev
   buttons.push(`<button class="page-btn" ${page === 1 ? "disabled" : ""} data-p="${page - 1}">‹</button>`);
@@ -127,7 +136,7 @@ function render() {
   });
   // Next
   buttons.push(`<button class="page-btn" ${page === totalPages ? "disabled" : ""} data-p="${page + 1}">›</button>`);
-  pg.innerHTML = buttons.join("");
+  elPg.innerHTML = buttons.join("");
 }
 
 function pageRange(current, total) {
@@ -187,7 +196,12 @@ async function handleLogin() {
 
 async function enterDashboard() {
   await loadAllUsers();
-  applyFilter("");
+  try {
+    applyFilter("");
+  } catch (renderErr) {
+    console.error("[enterDashboard] render failed:", renderErr);
+    throw renderErr;
+  }
   showView("view-dashboard");
 }
 
@@ -226,10 +240,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     await enterDashboard();
   } catch (err) {
-    if (err.status === 401) {
-      showView("view-login");
-    } else {
-      showView("view-login");
+    if (err.status !== 401) {
+      console.error("[DOMContentLoaded] enterDashboard failed:", err);
     }
+    showView("view-login");
   }
 });
