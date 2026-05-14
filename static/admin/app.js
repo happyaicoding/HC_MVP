@@ -20,6 +20,7 @@ const state = {
 const $ = (id) => document.getElementById(id);
 
 function showView(id) {
+  console.log("[showView]", id, new Error().stack?.split("\n")[2]?.trim());
   document.querySelectorAll(".view").forEach((el) => el.classList.add("hidden"));
   $(id).classList.remove("hidden");
 }
