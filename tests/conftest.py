@@ -9,7 +9,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
-# Point to an in-memory SQLite DB before importing app modules
+# APP_ENV must be forced (not setdefault) so it overrides APP_ENV=production
+# that may already be set in the deploy server environment.  Without this,
+# SessionMiddleware gets https_only=True, sets Secure cookie, and TestClient
+# (HTTP) drops it → session lost → every authenticated request returns 401.
+os.environ["APP_ENV"] = "test"
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-32-chars-long!!")
 os.environ.setdefault("LINE_CHANNEL_ACCESS_TOKEN", "test-token")

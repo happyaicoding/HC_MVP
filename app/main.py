@@ -15,8 +15,20 @@ from app.database import Base, engine
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    """Create all DB tables on startup (Alembic handles migrations in prod)."""
-    Base.metadata.create_all(bind=engine)
+    """Create all DB tables on startup.
+
+    Development / CI: create_all acts as a convenience fallback so the app
+    starts without running Alembic manually.
+    Production: Alembic (deploy.sh → alembic upgrade head) is the authority;
+    create_all is a no-op when every table already exists.
+    Tests: DB is managed entirely by the reset_db fixture (conftest.py);
+    create_all here runs on the app engine, not the test engine, so it is
+    harmless but redundant — tests never use this engine.
+    """
+    from app.config import get_settings
+    settings = get_settings()
+    if settings.app_env != "test":
+        Base.metadata.create_all(bind=engine)
     yield
 
 
@@ -36,7 +48,12 @@ def create_app() -> FastAPI:
         SessionMiddleware,
         secret_key=settings.secret_key,
         session_cookie="hc_session",
-        https_only=(settings.app_env == "production"),
+        # https_only=False: Nginx terminates TLS and enforces HTTP→HTTPS
+        # redirect, so the Secure flag is not needed at the app layer.
+        # Setting https_only=True would break TestClient (HTTP transport)
+        # because Python's cookiejar drops Secure cookies on non-HTTPS
+        # requests, causing session loss after login.
+        https_only=False,
         same_site="lax",
     )
 
