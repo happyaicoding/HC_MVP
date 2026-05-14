@@ -24,7 +24,7 @@ body { background: var(--color-bg); }
 
 /* ── View switching ─────────────────────────────────────── */
 .view { min-height: 100vh; }
-.view.hidden { display: none; }
+.view.hidden { display: none !important; }
 
 /* ── Login card ─────────────────────────────────────────── */
 #view-login {
