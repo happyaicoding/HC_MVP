@@ -184,12 +184,12 @@ async function handleLogin() {
       method: "POST",
       body: JSON.stringify({ username, password }),
     });
-    await enterDashboard();
+    // 整頁重新載入，DOMContentLoaded 自動進後台（乾淨的頁面跳轉感）
+    window.location.reload();
   } catch (err) {
     $("login-error").textContent =
       err.status === 401 ? "帳號或密碼錯誤" : "登入失敗，請稍後再試";
     $("login-error").classList.remove("hidden");
-  } finally {
     setLoading(btn, false);
   }
 }
