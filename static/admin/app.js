@@ -165,6 +165,29 @@ function esc(str) {
     .replace(/"/g, "&quot;");
 }
 
+// ── Idle auto-logout ──────────────────────────────────────────────────────
+const IDLE_LIMIT = 5 * 60 * 1000; // 5 分鐘
+let idleTimer = null;
+
+function resetIdle() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => handleLogout(true), IDLE_LIMIT);
+}
+
+function startIdle() {
+  ["mousemove", "keydown", "click", "scroll", "touchstart"].forEach((ev) =>
+    document.addEventListener(ev, resetIdle)
+  );
+  resetIdle();
+}
+
+function stopIdle() {
+  clearTimeout(idleTimer);
+  ["mousemove", "keydown", "click", "scroll", "touchstart"].forEach((ev) =>
+    document.removeEventListener(ev, resetIdle)
+  );
+}
+
 // ── Event handlers ────────────────────────────────────────────────────────
 async function handleLogin() {
   $("login-error").classList.add("hidden");
@@ -204,14 +227,22 @@ async function enterDashboard() {
   }
   showView("view-dashboard");
   window.scrollTo({ top: 0, behavior: "instant" });
+  startIdle();
 }
 
-async function handleLogout() {
+async function handleLogout(isIdle = false) {
+  stopIdle();
   try { await apiFetch("/api/admin/logout", { method: "POST" }); } catch { /* ignore */ }
   showView("view-login");
   $("username").value = "";
   $("password").value = "";
   $("search-input").value = "";
+  if (isIdle) {
+    $("login-error").textContent = "已閒置超過 5 分鐘，請重新登入";
+    $("login-error").classList.remove("hidden");
+  } else {
+    $("login-error").classList.add("hidden");
+  }
 }
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────
