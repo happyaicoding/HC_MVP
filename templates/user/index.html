@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HC 會員加入</title>
-  <link rel="stylesheet" href="/static/user/style.css?v=0.1.2" />
+  <link rel="stylesheet" href="/static/user/style.css?v=0.2.0" />
 </head>
 <body>
   <div class="container">
-    <header class="header">
+    <header id="main-header" class="header">
       <h1 class="header__title">會員加入</h1>
     </header>
 
@@ -78,16 +78,62 @@
       <p class="hint">歡迎加入，您已成為我們的會員。</p>
     </section>
 
+    <!-- Step 6: 使用者首頁（線上預約） -->
+    <section id="step-home" class="step hidden">
+      <nav class="app-nav">
+        <span class="app-nav__title">線上預約</span>
+        <button id="btn-to-member" class="app-nav__btn">會員專區</button>
+      </nav>
+      <div class="store-card">
+        <div class="store-card__banner">店家形象圖</div>
+        <div class="store-card__body">
+          <h2 class="store-card__name">HC 美容美髮沙龍</h2>
+          <p class="store-card__meta">
+            提供專業剪髮、染髮、燙髮及護髮服務，<br>
+            讓每位顧客展現最美的自己。<br><br>
+            ⏰ 週一至週六　10:00 – 20:00<br>
+            📍 台北市信義區忠孝東路五段
+          </p>
+        </div>
+      </div>
+      <button id="btn-start-booking" class="btn btn--primary" data-label="開始預約">開始預約</button>
+    </section>
+
+    <!-- Step 7: 會員專區 -->
+    <section id="step-member" class="step hidden">
+      <nav class="app-nav">
+        <button id="btn-to-home" class="app-nav__btn">前往預約</button>
+        <span class="app-nav__title">會員專區</span>
+      </nav>
+      <div class="member-card">
+        <div class="member-card__avatar">👤</div>
+        <div class="member-field">
+          <span class="member-label">姓名</span>
+          <span id="member-name" class="member-value">—</span>
+        </div>
+        <div class="member-field">
+          <span class="member-label">手機</span>
+          <span id="member-phone" class="member-value">—</span>
+        </div>
+        <div class="member-field">
+          <span class="member-label">Email</span>
+          <span id="member-email" class="member-value">—</span>
+        </div>
+      </div>
+      <button id="btn-my-booking" class="btn btn--primary" data-label="我的預約">我的預約</button>
+    </section>
+
     <!-- 錯誤畫面 -->
     <section id="step-error" class="step hidden">
       <div class="error-icon">✕</div>
       <p id="global-error-msg" class="hint"></p>
     </section>
   </div>
+  <div id="toast" class="toast">敬請期待</div>
 
   <!-- LIFF ID injected by server -->
   <script>window.__LIFF_ID__ = {{ liff_id | tojson }};</script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script src="/static/user/app.js?v=0.1.2"></script>
+  <script src="/static/user/app.js?v=0.2.0"></script>
 </body>
 </html>

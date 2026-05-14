@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.user import User
-from app.schemas.user import RegisterRequest, RegisterResponse
+from app.schemas.user import RegisterRequest, RegisterResponse, UserProfileResponse
 from app.services import otp_service
 
 router = APIRouter(tags=["users"])
@@ -83,3 +83,21 @@ def register_user(
     db.commit()
     db.refresh(user)
     return RegisterResponse(message="registered", user_id=user.id)
+
+
+@router.get(
+    "/line/{line_user_id}",
+    response_model=UserProfileResponse,
+    status_code=status.HTTP_200_OK,
+)
+def get_user_by_line_id(
+    line_user_id: str, db: Session = Depends(get_db)
+) -> UserProfileResponse:
+    """Return a registered member's profile by LINE user ID."""
+    user: User | None = db.query(User).filter_by(line_user_id=line_user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="user not found",
+        )
+    return UserProfileResponse(name=user.name, phone=user.phone, email=user.email)
