@@ -20,7 +20,6 @@ const state = {
 const $ = (id) => document.getElementById(id);
 
 function showView(id) {
-  console.log("[showView]", id, new Error().stack?.split("\n")[2]?.trim());
   document.querySelectorAll(".view").forEach((el) => el.classList.add("hidden"));
   $(id).classList.remove("hidden");
 }
@@ -55,7 +54,6 @@ async function loadAllUsers() {
     page++;
   }
   state.allUsers = all;
-  console.log("[loadAllUsers] done — allUsers.length:", state.allUsers.length, "sample:", JSON.stringify(state.allUsers[0] ?? null));
 }
 
 // ── Rendering ─────────────────────────────────────────────────────────────
@@ -86,8 +84,6 @@ function render() {
   const start  = (page - 1) * pageSize;
   const slice  = filtered.slice(start, start + pageSize);
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-
-  console.log("[render] filtered:", filtered.length, "slice:", slice.length, "page:", page);
 
   // Null-guard: log which element is missing and bail gracefully
   const elBadge  = $("total-badge");
@@ -207,6 +203,7 @@ async function enterDashboard() {
     throw renderErr;
   }
   showView("view-dashboard");
+  window.scrollTo({ top: 0, behavior: "instant" });
 }
 
 async function handleLogout() {
