@@ -44,3 +44,11 @@ class RegisterResponse(BaseModel):
 
     message: str = "registered"
     user_id: int
+
+
+class UserProfileResponse(BaseModel):
+    """Response for GET /api/users/line/{line_user_id}."""
+
+    name: str
+    phone: str
+    email: str

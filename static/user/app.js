@@ -1,24 +1,23 @@
 /**
- * HC MVP — LIFF 會員註冊前端
+ * HC MVP — LIFF 會員前端 (Phase 2, v0.2.0)
  *
  * 流程：
  *  1. LIFF init → 取得 access token → POST /api/auth/line/verify → 暫存 line_user_id
- *  2. 使用者輸入手機 → POST /api/otp/send
- *  3. 使用者輸入 OTP → POST /api/otp/verify → 取得 verify_token
- *  4. 使用者填寫姓名/Email → POST /api/users/register
- *  5. 顯示成功畫面
+ *  2a. 已存在用戶 → GET /api/users/line/{id} → 直接進使用者首頁
+ *  2b. 新用戶 → OTP 流程 → POST /api/users/register → 進使用者首頁
  */
 
-const LIFF_ID = document.currentScript?.dataset?.liffId
-  || window.__LIFF_ID__
-  || "";          // 由後端注入或 .env 提供；見 index.html meta tag
+const LIFF_ID = window.__LIFF_ID__ || "";
 
 // ── State ─────────────────────────────────────────────────────────────────
 const state = {
-  lineUserId:   null,   // string
-  phone:        null,   // E.164 string
-  verifyToken:  null,   // string from /api/otp/verify
+  lineUserId:  null,   // string
+  phone:       null,   // E.164 string
+  verifyToken: null,   // string from /api/otp/verify
+  user:        null,   // { name, phone, email }
 };
+
+const APP_VIEWS = new Set(["step-home", "step-member"]);
 
 // ── DOM helpers ───────────────────────────────────────────────────────────
 const $ = (id) => document.getElementById(id);
@@ -26,6 +25,7 @@ const $ = (id) => document.getElementById(id);
 function showStep(id) {
   document.querySelectorAll(".step").forEach((el) => el.classList.add("hidden"));
   $(id).classList.remove("hidden");
+  $("main-header").classList.toggle("hidden", APP_VIEWS.has(id));
 }
 
 function showError(elementId, msg) {
@@ -58,6 +58,45 @@ async function apiPost(path, body) {
   return data;
 }
 
+async function apiGet(path) {
+  const resp = await fetch(path);
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) {
+    const detail = data.detail || `HTTP ${resp.status}`;
+    throw Object.assign(new Error(detail), { status: resp.status, data });
+  }
+  return data;
+}
+
+// ── Member helpers ─────────────────────────────────────────────────────────
+async function checkExistingUser(lineUserId) {
+  try {
+    return await apiGet(`/api/users/line/${encodeURIComponent(lineUserId)}`);
+  } catch (err) {
+    if (err.status === 404) return null;
+    throw err;
+  }
+}
+
+function formatPhoneDisplay(e164) {
+  // +886xxxxxxxxx → 09xxxxxxxx
+  return "0" + e164.slice(4);
+}
+
+function populateMember(user) {
+  $("member-name").textContent  = user.name;
+  $("member-phone").textContent = formatPhoneDisplay(user.phone);
+  $("member-email").textContent = user.email;
+}
+
+let _toastTimer = null;
+function showComingSoon() {
+  const toast = $("toast");
+  toast.classList.add("visible");
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => toast.classList.remove("visible"), 2200);
+}
+
 // ── Step 1: LIFF init ──────────────────────────────────────────────────────
 async function initLiff() {
   showStep("step-init");
@@ -72,7 +111,15 @@ async function initLiff() {
     const accessToken = liff.getAccessToken();
     const { line_user_id } = await apiPost("/api/auth/line/verify", { access_token: accessToken });
     state.lineUserId = line_user_id;
-    showStep("step-phone");
+
+    const existing = await checkExistingUser(line_user_id);
+    if (existing) {
+      state.user = existing;
+      populateMember(existing);
+      showStep("step-home");
+    } else {
+      showStep("step-phone");
+    }
   } catch (err) {
     $("global-error-msg").textContent =
       "LINE 身份驗證失敗，請關閉後重新開啟。\n(" + err.message + ")";
@@ -89,7 +136,7 @@ function normalisePhone(raw) {
 
 async function handleSendOtp() {
   hideError("phone-error");
-  const raw = $("phone-input").value.trim();
+  const raw   = $("phone-input").value.trim();
   const phone = normalisePhone(raw);
 
   if (!phone) {
@@ -147,22 +194,22 @@ async function handleRegister() {
   const name  = $("name-input").value.trim();
   const email = $("email-input").value.trim();
 
-  if (!name)                  { showError("profile-error", "請輸入姓名"); return; }
-  if (!validateEmail(email))  { showError("profile-error", "請輸入有效的 Email 地址"); return; }
+  if (!name)                 { showError("profile-error", "請輸入姓名"); return; }
+  if (!validateEmail(email)) { showError("profile-error", "請輸入有效的 Email 地址"); return; }
 
   const btn = $("btn-register");
   setLoading(btn, true);
   try {
     await apiPost("/api/users/register", {
-      line_user_id:  state.lineUserId,
-      phone:         state.phone,
-      verify_token:  state.verifyToken,
+      line_user_id: state.lineUserId,
+      phone:        state.phone,
+      verify_token: state.verifyToken,
       name,
       email,
     });
-    showStep("step-done");
-    // Close LIFF window after 2s if running inside LINE
-    if (liff.isInClient()) setTimeout(() => liff.closeWindow(), 2000);
+    state.user = { name, phone: state.phone, email };
+    populateMember(state.user);
+    showStep("step-home");
   } catch (err) {
     showError("profile-error", "註冊失敗，請稍後再試。(" + err.message + ")");
   } finally {
@@ -172,21 +219,24 @@ async function handleRegister() {
 
 // ── Event wiring ──────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
-  // Store button labels for setLoading restore
   ["btn-send-otp", "btn-verify-otp", "btn-register"].forEach((id) => {
     const el = $(id);
     if (el) el.dataset.label = el.textContent;
   });
 
-  $("btn-send-otp")   ?.addEventListener("click", handleSendOtp);
-  $("btn-verify-otp") ?.addEventListener("click", handleVerifyOtp);
-  $("btn-resend-otp") ?.addEventListener("click", () => {
+  $("btn-send-otp")    ?.addEventListener("click", handleSendOtp);
+  $("btn-verify-otp")  ?.addEventListener("click", handleVerifyOtp);
+  $("btn-resend-otp")  ?.addEventListener("click", () => {
     showStep("step-phone");
     $("otp-input").value = "";
   });
-  $("btn-register")   ?.addEventListener("click", handleRegister);
+  $("btn-register")    ?.addEventListener("click", handleRegister);
 
-  // Allow Enter key submission on inputs
+  $("btn-to-member")    ?.addEventListener("click", () => showStep("step-member"));
+  $("btn-to-home")      ?.addEventListener("click", () => showStep("step-home"));
+  $("btn-start-booking")?.addEventListener("click", showComingSoon);
+  $("btn-my-booking")   ?.addEventListener("click", showComingSoon);
+
   $("phone-input") ?.addEventListener("keydown", (e) => e.key === "Enter" && handleSendOtp());
   $("otp-input")   ?.addEventListener("keydown", (e) => e.key === "Enter" && handleVerifyOtp());
   $("email-input") ?.addEventListener("keydown", (e) => e.key === "Enter" && handleRegister());
