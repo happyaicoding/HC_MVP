@@ -55,6 +55,7 @@ async function loadAllUsers() {
     page++;
   }
   state.allUsers = all;
+  console.log("[loadAllUsers] done — allUsers.length:", state.allUsers.length, "sample:", JSON.stringify(state.allUsers[0] ?? null));
 }
 
 // ── Rendering ─────────────────────────────────────────────────────────────
@@ -85,6 +86,8 @@ function render() {
   const start  = (page - 1) * pageSize;
   const slice  = filtered.slice(start, start + pageSize);
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+
+  console.log("[render] filtered:", filtered.length, "slice:", slice.length, "page:", page);
 
   // Null-guard: log which element is missing and bail gracefully
   const elBadge  = $("total-badge");
